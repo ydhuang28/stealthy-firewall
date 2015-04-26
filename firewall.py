@@ -5,13 +5,13 @@ import time
 
 def main(net):
     # assumes that there are exactly 2 ports
-    portnames = [ p.name for p in net.ports() ]
-    portpair = dict(zip(portnames, portnames[::-1]))
+    port_names = [p.name for p in net.ports()]
+    port_pairs = dict(zip(portnames, portnames[::-1]))
 
     while True:
         pkt = None
         try:
-            port,pkt = net.recv_packet(timeout=0.5)
+            port, pkt = net.recv_packet(timeout=0.5)
         except NoPackets:
             pass
         except Shutdown:
