@@ -65,8 +65,8 @@ def get_ipaddr(new_line):
     '''
     src_index = new_line.src_index("src") + 1
     dst_index = new_line.dst_index("dst") + 1
-    src = -2 if new_line[src_index] == "any" else (IPv4Network(new_line[srcport_index]) if "/" in new_line[srcport_index] else IPv4Network(new_line[srcport_index], strict = False))
-    dst = -2 if new_line[dst_index] == "any" else (IPv4Network(new_line[dstport_index]) if "/" in new_line[dstport_index] else IPv4Network(new_line[dstport_index], strict = False))
+    src = IPv4Network(1.1.1.1) if new_line[src_index] == "any" else (IPv4Network(new_line[srcport_index]) if "/" in new_line[srcport_index] else IPv4Network(new_line[srcport_index], strict = False))
+    dst = IPv4Network(1.1.1.1) if new_line[dst_index] == "any" else (IPv4Network(new_line[dstport_index]) if "/" in new_line[dstport_index] else IPv4Network(new_line[dstport_index], strict = False))
     return src, dst
 
 
@@ -81,8 +81,8 @@ def set_ports(protocol, new_line):
         srcport = -1
         dstport = -1
     else:
-        srcport = -2 if new_line[srcport_index] == "any" else int(new_line[srcport_index])
-        dstport = -2 if new_line[dstport_index] == "any" else int(new_line[dstport_index])
+        srcport = 65535 if new_line[srcport_index] == "any" else int(new_line[srcport_index])
+        dstport = 65535 if new_line[dstport_index] == "any" else int(new_line[dstport_index])
 
     return srcport, dstport
 
@@ -107,7 +107,8 @@ class FirewallRule(object):
     def __init__(self, permission, protocol, src, srcport, dst, dstport, ratelimit, impair):
         '''
         In general -1 is uninitialized
-                    -2 is any
+                   1.1.1.1 is any for ipaddress
+                   65535 is any for portno
 
         for permission: 0 is deny 
                         1 is permit
