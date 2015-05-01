@@ -124,10 +124,28 @@ def match(pkt, rule):
 
 def rate_limit(pkt, rule):
 	'''
-	Implements the token bucket algorithm
-	to rate-limit specific packets
+	Returns true if the packet can be sent
+	(rate is under the limit)
 	'''
-	
+	size = len(pkt) - len(pkt.get_header(Ethernet))
+	if size <= rule.tokenbkt:
+		rule.tokenbkt -= size
+		return True
+	else:
+		return False
+
+def add_tokens(rules):
+	'''
+	Add tokens to token buckets when called.
+	Add tokens proportional to time elapsed.
+	'''
+	for rule in rules:
+		if rule.ratelimit:
+			if rule.tokenbkt < 2*rule.ratelimit:
+				time_elapsed = time.time() - rule.last_t
+				amount_to_add = int(rule.ratelimit * time_elapsed)	# round down
+				rule.tokenbkt += amount_to_add if amount_to_add <= 2*rule.ratelimit else 2*rule.ratelimit
+				rule.last_t = time.time()
 
 def main(net):
 	'''
@@ -136,36 +154,39 @@ def main(net):
 	# assumes that there are exactly 2 ports
 	port_names = [p.name for p in net.ports()]
 	port_pairs = dict(zip(port_names, port_names[::-1]))
+
 	firewall_rules = []
 	load_rules(firewall_rules)
 
 	while True:
 		pkt = None
 		try:
-			port, pkt = net.recv_packet(timeout=0.5)
+			port, pkt = net.recv_packet(timeout=0.45)
 		except NoPackets:
 			pass
 		except Shutdown:
 			break
 
+		add_tokens(firewall_rules)
+
 		if pkt is not None:
-
 			matched = False
-
 			# check rules
 			for rule in firewall_rules:
 
 				matched = match(pkt, rule)
 				if matched:
-					log_info("Packet matched rule {}".format(firewall_rules.index(rule)+1) + ": " + str(pkt))
 					if rule.permit: # matches, and permitted
-						log_info("permitted, rule {}".format(firewall_rules.index(rule)+1))
 						# send packet if not ratelimited or impaired
 						if not rule.ratelimit and not rule.impair:
 							net.send_packet(port_pairs[port], pkt)
 						elif rule.ratelimit:
-							net.send_packet(port_pairs[port], pkt)
+							can_send = rate_limit(pkt, rule)
+							if can_send:
+								net.send_packet(port_pairs[port], pkt)
 						else:	# impair
+							## implement
+
 							net.send_packet(port_pairs[port], pkt)
 
 					# check no more rules once one matches
@@ -208,6 +229,7 @@ class FirewallRule(object):
 		self.dst = dst
 		self.dstport = dstport
 		self.ratelimit = ratelimit
-		self.tokenbkt = ratelimit
+		self.tokenbkt = 0
+		self.last_t = time.time()
 		self.impair = impair
 
