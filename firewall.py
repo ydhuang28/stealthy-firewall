@@ -3,7 +3,6 @@ from switchyard.lib.address import *
 from switchyard.lib.common import *
 from ipaddress import IPv4Network, IPv4Address
 import time
-import re
 
 def main(net):
 	# assumes that there are exactly 2 ports
@@ -34,29 +33,29 @@ def main(net):
 
 
 def load_rules(rules):
-    '''
-    Read the firewall_rules file, create rule objects for every rule
-    load them into a list 
-    '''
-    f = open("firewall_rules", "r")
-    
-    for line in f:
+	'''
+	Read the firewall_rules file, create rule objects for every rule
+	load them into a list 
+	'''
+	f = open("firewall_rules", "r")
+	
+	for line in f:
 
-        if line[0] == "#":
-            continue
+		if line[0] == "#":
+			continue
 
-        new_line = line.split() #new_line is a list
-        permission = 0 if new_line[0] == "deny" else 1
-        protocol = protocol(new_line[1])
-        src, dst = get_ipaddr(new_line)
-        srcport,dstport = set_ports(protocol,new_line)
-        ratelimit = -2 if "ratelimit" not in new_line else int(new_line[new_line.index("ratelimit") + 1])
-        impair = -1 if "impair" not in new_line else 0
+		new_line = line.split() #new_line is a list
+		permission = 0 if new_line[0] == "deny" else 1
+		protocol = protocol(new_line[1])
+		src, dst = get_ipaddr(new_line)
+		srcport,dstport = set_ports(protocol,new_line)
+		ratelimit = -2 if "ratelimit" not in new_line else int(new_line[new_line.index("ratelimit") + 1])
+		impair = -1 if "impair" not in new_line else 0
 
-        rule = FirewallRule(permission, protocol, src, srcport, dst, dstport, ratelimit, impair)
-        rules.append(rule)
-        
-    f.close()
+		rule = FirewallRule(permission, protocol, src, srcport, dst, dstport, ratelimit, impair)
+		rules.append(rule)
+		
+	f.close()
 
 
 def get_ipaddr(new_line):
@@ -65,8 +64,8 @@ def get_ipaddr(new_line):
 	'''
 	src_index = new_line.src_index("src") + 1
 	dst_index = new_line.dst_index("dst") + 1
-	src = -2 if new_line[src_index] == "any" else (IPv4Network(new_line[srcport_index]) if "/" in new_line[srcport_index] else IPv4Network(new_line[srcport_index], strict = False))
-	dst = -2 if new_line[dst_index] == "any" else (IPv4Network(new_line[dstport_index]) if "/" in new_line[dstport_index] else IPv4Network(new_line[dstport_index], strict = False))
+	src = IPv4Network(1.1.1.1) if new_line[src_index] == "any" else (IPv4Network(new_line[srcport_index]) if "/" in new_line[srcport_index] else IPv4Network(new_line[srcport_index], strict = False))
+	dst = IPv4Network(1.1.1.1) if new_line[dst_index] == "any" else (IPv4Network(new_line[dstport_index]) if "/" in new_line[dstport_index] else IPv4Network(new_line[dstport_index], strict = False))
 	return src, dst
 
 
@@ -77,12 +76,12 @@ def set_ports(protocol, new_line):
 	srcport_index = new_line.index("srcport") + 1
 	dstport_index = new_line.index("dstport") + 1 
 
-    if protocol == 1 or 3: #not tcp or udp
-        srcport = -1
-        dstport = -1
-    else:
-        srcport = -2 if new_line[srcport_index] == "any" else int(new_line[srcport_index])
-        dstport = -2 if new_line[dstport_index] == "any" else int(new_line[dstport_index])
+	if protocol == 1 or 3: #not tcp or udp
+		srcport = -1
+		dstport = -1
+	else:
+		srcport = 65535 if new_line[srcport_index] == "any" else int(new_line[srcport_index])
+		dstport = 65535 if new_line[dstport_index] == "any" else int(new_line[dstport_index])
 
 	return srcport, dstport
 
@@ -107,7 +106,8 @@ class FirewallRule(object):
 	def __init__(self, permission, protocol, src, srcport, dst, dstport, ratelimit, impair):
 		'''
 		In general -1 is uninitialized
-					-2 is any
+				   1.1.1.1 is any for ipaddress
+				   65535 is any for portno
 
 		for permission: 0 is deny 
 						1 is permit
@@ -127,3 +127,4 @@ class FirewallRule(object):
 		self.dstport = dstport
 		self.ratelimit = ratelimit
 		self.impair = impair
+
