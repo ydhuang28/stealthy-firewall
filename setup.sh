@@ -9,4 +9,4 @@ else
   git clone https://github.com/jsommers/switchyard
 fi
 echo "Installing any necessary Python libraries (this may take a moment)"
-sudo pip3 install -q -r switchyard/requirements.txt
+sudo -H pip3 install -q -r switchyard/requirements.txt
