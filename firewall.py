@@ -34,29 +34,29 @@ def main(net):
 
 
 def load_rules(rules):
-	'''
-	Read the firewall_rules file, create rule objects for every rule
-	load them into a list 
-	'''
-	f = open("firewall_rules", "r")
-	
-	for line in f:
+    '''
+    Read the firewall_rules file, create rule objects for every rule
+    load them into a list 
+    '''
+    f = open("firewall_rules", "r")
+    
+    for line in f:
 
-		if line[0] == "#":
-			continue
+        if line[0] == "#":
+            continue
 
-		new_line = line.split() #new_line is a list
-		permission = 0 if new_line[0] == "deny" else 1
-		protocol = protocol(new_line[1])
-		src, dst = get_ipaddr(new_line)
-		srcport,dstport = set_ports(protocol,new_line)
-		ratelimit = -2 if "ratelimit" not in new_line else new_line[new_line.index("ratelimit") + 1]
-		impair = -1 if "impair" not in new_line else 0
+        new_line = line.split() #new_line is a list
+        permission = 0 if new_line[0] == "deny" else 1
+        protocol = protocol(new_line[1])
+        src, dst = get_ipaddr(new_line)
+        srcport,dstport = set_ports(protocol,new_line)
+        ratelimit = -2 if "ratelimit" not in new_line else int(new_line[new_line.index("ratelimit") + 1])
+        impair = -1 if "impair" not in new_line else 0
 
-		rule = FirewallRule(permission, protocol, src, srcport, dst, dstport, ratelimit, impair)
-		rules.append(rule)
-		
-	f.close()
+        rule = FirewallRule(permission, protocol, src, srcport, dst, dstport, ratelimit, impair)
+        rules.append(rule)
+        
+    f.close()
 
 
 def get_ipaddr(new_line):
@@ -77,12 +77,12 @@ def set_ports(protocol, new_line):
 	srcport_index = new_line.index("srcport") + 1
 	dstport_index = new_line.index("dstport") + 1 
 
-	if protocol == 1 or 3: #not tcp or udp
-		srcport = -1
-		dstport = -1
-	else:
-		srcport = -2 if new_line[srcport_index] == "any" else new_line[srcport_index]
-		dstport = -2 if new_line[dstport_index] == "any" else new_line[dstport_index]
+    if protocol == 1 or 3: #not tcp or udp
+        srcport = -1
+        dstport = -1
+    else:
+        srcport = -2 if new_line[srcport_index] == "any" else int(new_line[srcport_index])
+        dstport = -2 if new_line[dstport_index] == "any" else int(new_line[dstport_index])
 
 	return srcport, dstport
 
