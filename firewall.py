@@ -3,6 +3,7 @@ from switchyard.lib.address import *
 from switchyard.lib.common import *
 from ipaddress import IPv4Network, IPv4Address
 import time
+import random
 
 def get_ipaddr(new_line):
 	'''
