@@ -127,7 +127,12 @@ def rate_limit(pkt, rule):
 	Returns true if the packet can be sent
 	(rate is under the limit)
 	'''
-<<<<<<< HEAD
+	size = len(pkt) - len(pkt.get_header(Ethernet))
+	if size <= rule.tokenbkt:
+		rule.tokenbkt -= size
+		return True
+	else:
+		return False
 	
 def impair_pkt(pkt, rule):
 	'''
@@ -140,13 +145,7 @@ def impair_pkt(pkt, rule):
 	elif pkt.protocol == IPProtocol.UDP:
 		if udp_match(pkt, rule):
 			pkt.RST = 1
-=======
-	size = len(pkt) - len(pkt.get_header(Ethernet))
-	if size <= rule.tokenbkt:
-		rule.tokenbkt -= size
-		return True
-	else:
-		return False
+	
 
 def add_tokens(rules):
 	'''
@@ -160,7 +159,6 @@ def add_tokens(rules):
 				amount_to_add = int(rule.ratelimit * time_elapsed)	# round down
 				rule.tokenbkt += amount_to_add if amount_to_add <= 2*rule.ratelimit else 2*rule.ratelimit
 				rule.last_t = time.time()
->>>>>>> f29bf1fc09fdfe3aa8b958bba8f29bf915108480
 
 def main(net):
 	'''
