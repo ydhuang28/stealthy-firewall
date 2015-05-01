@@ -134,17 +134,21 @@ def rate_limit(pkt, rule):
 	else:
 		return False
 	
-def impair_pkt(pkt, rule):
+def impair_pkt(pkt):
 	'''
-	Inject RST to reset connection
+	Impairment:
+
+	20 pct. of the time connection is reset
+	40 pct. of the time the packet is dropped
 	'''
-	if pkt.protocol == IPProtocol.TCP: #don't know if we can do this comparison
-		if tcp_match(pkt, rule): 
-			pkt.RST = 1
-			
-	elif pkt.protocol == IPProtocol.UDP:
-		if udp_match(pkt, rule):
-			pkt.RST = 1
+	chance = random.random()
+	if pkt.has_header(TCP):
+		if chance < 0.2:	# 20% chance reset
+			pkt.get_header(TCP).RST = 1
+			return True
+	else:
+		if chance > 0.2 and chance < 0.6:	# 40% chance drop
+			return False
 	
 
 def add_tokens(rules):
@@ -198,9 +202,9 @@ def main(net):
 							if can_send:
 								net.send_packet(port_pairs[port], pkt)
 						else:	# impair
-							## implement
-
-							net.send_packet(port_pairs[port], pkt)
+							can_send = impair_pkt(pkt)
+							if can_send:
+								net.send_packet(port_pairs[port], pkt)
 
 					# check no more rules once one matches
 					break
