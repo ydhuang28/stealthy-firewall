@@ -128,6 +128,17 @@ def rate_limit(pkt, rule):
 	to rate-limit specific packets
 	'''
 	
+def impair_pkt(pkt, rule):
+	'''
+	Inject RST to reset connection
+	'''
+	if pkt.protocol == IPProtocol.TCP: #don't know if we can do this comparison
+		if tcp_match(pkt, rule): 
+			pkt.RST = 1
+			
+	elif pkt.protocol == IPProtocol.UDP:
+		if udp_match(pkt, rule):
+			pkt.RST = 1
 
 def main(net):
 	'''
