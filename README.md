@@ -1,16 +1,17 @@
-cosc465-firewall
+stealthy-firewall
 ================
 
-Repo for project 6, COSC 465 Spring '15.
+A firewall for switchyard-based router implementations.
 
-run setup: `./setup.sh`
+Run setup: `./setup.sh`
 
-to run in test mode:
+To run in test mode:
 
     switchyard/srpy.py -t -s firewalltests.srpy firewall.py
 
-to run in "real" mode:
+To run in "real" mode:
 
     switchyard/srpy.py firewall.py
 
-Refer to the project description for further details.
+Yuxin David Huang
+March 2017
