@@ -13,5 +13,8 @@ To run in "real" mode:
 
     switchyard/srpy.py firewall.py
 
+Original author: Joel Sommers @ Colgate Univ.
+
 Yuxin David Huang
+
 March 2017
